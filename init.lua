@@ -8,11 +8,11 @@ end
 -- get all ssids
 function listap(t)
     for k,v in pairs(t) do
-	if string.find(k, "ESP") then 
+	if string.find(k, "ESP.*") then 
 	  local authmode, rssi, bssid, channel = string.match(v, "([^,]+),([^,]+),([^,]+),([^,]+)")
           print(k.." : "..rssi)
 	  blinky = tmr.create()
-	  blinky:register(20*rssi*rssi / rssi, tmr.ALARM_SINGLE, function() toggleLED end)
+	  blinky:register(20*rssi*rssi / rssi, tmr.ALARM_SINGLE, toggleLED)
 	  tmr.start()
 	else 
 	  print("no ping, no pong")
@@ -23,5 +23,5 @@ function listap(t)
     aplist:start()
 end
 
-wifi.setmode(wifi.STATION)
+wifi.setmode(wifi.STATIONAP)
 wifi.sta.getap(listap)
