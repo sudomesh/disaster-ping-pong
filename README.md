@@ -6,7 +6,7 @@ The ESP8266 will then blink an LED based on the RSSI value it detects.
 
 In its most exicting implementation, two ESP8266 can be flashed with this firmware and be made to detect one another's presence.  
 
-# pre-requistes  
+# pre-requisites 
 * an ESP8266 (preferably on a dev board)  
 * an LED to blink (preferably already on the dev board)  
 * NodeMCU firmware (located in the firmware directory)  
