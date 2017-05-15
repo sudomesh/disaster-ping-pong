@@ -11,7 +11,7 @@ In its most exicting implementation, two ESP8266 can be flashed with this firmwa
 * an LED to blink (preferably already on the dev board)  
 * NodeMCU firmware (located in the firmware directory)  
 * esptool.py (pip install esptool)  
-* nodemcu-uploader (sudo apt-get install uploader)  
+* nodemcu-uploader (sudo pip install nodemcu-uploader)  
 
 # steps 
 Flash the NodeMCU firmware contained within the firmware directory, or build your own at https://nodemcu-build.com.
