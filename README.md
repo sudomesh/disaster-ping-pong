@@ -14,7 +14,24 @@ In its most exicting implementation, two ESP8266 can be flashed with this firmwa
 * nodemcu-uploader (sudo apt-get install uploader)  
 
 # steps 
-* flash nodemcu firmware onto esp8266 using https://github.com/sudomesh/disaster-radio-nodemcu/wiki#flashing-nodemcu .
-* push lua script onto esp using ./update.sh
-* restart esp8266
-* expected is that the blue LED blink frequency will increase when it gets close to another esp8266 (or any SSID starting with ESP_*)
+Flash the NodeMCU firmware contained within the firmware directory, or build your own at https://nodemcu-build.com.
+The lua script used in this implementation only requires the most basic packages (gpio and wifi), so it should work with
+almost any firmware build. To flash, follow the guide at https://github.com/sudomesh/disaster-radio-nodemcu/wiki#flashing-nodemcu.   
+
+To upload and begin running the lua script, run the following 
+```
+./upload.sh
+```
+It may be necesary to reset your esp8266 after uploading the lua script. To do thise, press the screen button or unplug the board from
+your computer and plug it back in.  
+
+Expected outcome is that the blue LED blink frequency will increase when it gets close to another esp8266   
+
+By default, this script looks for an SSID starting with "ESP_". This was chosen since the NodeMCU firmware defaults
+to an SSID formatted something like "ESP_12BD5". So it is just looking for a friend, another ESP. This could be easily 
+modified in the script to look for SSID of your choosing, say "peoplesdisaster.radio" or "peoplesopen.net".  
+
+Note, this firmware and lua script have only been tested with an ESP-12F on a WeMos D1 mini development board.
+There are countless other dev board and ESP chip combinations out there, for more information regarding tested boards
+refer to our wiki, https://github.com/sudomesh/disaster-radio-nodemcu/wiki. 
+
