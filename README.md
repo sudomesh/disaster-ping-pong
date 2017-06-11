@@ -7,7 +7,7 @@ However, if a client connects to your ESP8266's access point, it with stop blink
 In its most exicting implementation, two ESP8266 can be flashed with this firmware and be made to detect one another's presence. 
 
  
-[![Disaster-ping-pong in action](https://www.youtube.com/upload_thumbnail?v=n53GxFxvkpE&t=1)](https://youtu.be/n53GxFxvkpE).
+[![Disaster-ping-pong in action](./raw/master/images/disaster-ping-demo.jpg)](https://youtu.be/n53GxFxvkpE).
  
 
 # prerequisites 
