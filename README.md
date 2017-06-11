@@ -4,7 +4,11 @@ Specifically, this repository uses an ESP8266 wifi microcontroller to detect the
 It does this by filtering avaible SSIDs for the desired SSID, then finding the RSSI (signal strength) associated with that SSID.
 The ESP8266 will then blink an LED based on the RSSI value it detects.  
 However, if a client connects to your ESP8266's access point, it with stop blinking the LED and leave it on constantly.  
-In its most exicting implementation, two ESP8266 can be flashed with this firmware and be made to detect one another's presence.  
+In its most exicting implementation, two ESP8266 can be flashed with this firmware and be made to detect one another's presence. 
+
+ 
+[![Disaster-ping-pong in action](https://www.youtube.com/upload_thumbnail?v=n53GxFxvkpE&t=1)](https://youtu.be/n53GxFxvkpE).
+ 
 
 # prerequisites 
 * an ESP8266 (preferably on a dev board)  
