@@ -1,0 +1,16 @@
+<h1 id="build-your-own-diaster-ping-pong-byodpp">Build Your Own Diaster Ping-Pong! (BYODPP)</h1>
+<p><img src="https://github.com/sudomesh/disaster-ping-pong/raw/master/images/devboard.jpeg" width="300"> <img src="https://github.com/sudomesh/disaster-ping-pong/raw/master/images/batterypack.jpeg" width="400"></p>
+<p>The Disaster Ping-Pong device is an intro kit for the Disaster Radio Foundation's flagship project, Disaster Radio. By following this guide you will learn the basic concepts being used in the development of the Disaster Radio while also providing a physical demonstration ad-hoc mesh networks. But first, you will need to gather the necessary ingredients.</p>
+<h2 id="ingredients">Ingredients</h2>
+<ul>
+<li>A friend to ping-pong with!</li>
+<li>A linux (or mac?) computer</li>
+<li>ESP8266 on a development board (like the one pictured above)</li>
+<li>A micro USB cable (usually any phone charger cord will do)</li>
+<li>GPIO pin headers (if not already on dev board)</li>
+<li>Solder, soldering iron, and basic soldering skills</li>
+<li>AA or AAA ~5V battery holder, preferably with ON/OFF switch and wires already attached (also pictured above)</li>
+<li>Three of the corresponding batteries</li>
+</ul>
+<h2 id="recipe">Recipe</h2>
+<p>After gathering the ingredients, you can start cooking up your own Disaster Ping-Pong. 1. First you will want to make sure your ESP8266 works properly, to do this, follow our guide located at https://github.com/sudomesh/disaster-radio-nodemcu/wiki 2. Once you have verified that your ESP8266 operates properly, you can flash the NodeMCU firmware and upload the Disaster Ping-Pong script located at https://github.com/sudomesh/disaster-ping-pong 3. If you don't have a friend with a second ESP8266, you can modify the code to look for your home WiFi, to do this open the init.lua file in a text editor and change the line that reads: <code>if string.find(k, &quot;ESP*&quot;) then</code> replacing <code>ESP*</code> with the name of your home WiFi (or any WiFi network you want to look for) 4. Once you have completed the Disaster Ping-Pong setup guide, try testing it by holding it closer (while it is still connected to your computer) to another ESP8266 also setup for Disaster Ping-Pong or an access point for the WiFi network you specified in step 3 (most likely, this will be your home wireless router) 5. Now you can make it portable by attaching the batteries! You may want to first test that the battery holder you bought works before soldering it directly to your ESP8266. 6. If your development board does not have pins sticking out of it, you may want to solder on header pins in case you get curious and want to play around with the other pins later. 7. Solder the red wire from your battery holder to the pin labeled 5V or Vin on the ESP8266 dev board and solder the black wire to the pin labeled G or GND on the ESP8266 dev board. 8. Insert three battries to the battery holder with the ON/OFF switch set to OFF. 9. Turn ON your battery holder, the ESP8266 should flash once and then begin operating just like it was connected to your computer. 10. Congratulations! You just built your first MESH NETWORK. This is just the beginning of Building your own Internet. Help build a bigger, better MESH by joining the Peoples Open Network!</p>
