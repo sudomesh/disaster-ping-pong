@@ -20,11 +20,7 @@ But first, you will need to gather the necessary ingredients.
 After gathering the ingredients, you can start cooking up your own Disaster Ping-Pong.
 1. First you will want to make sure your ESP8266 works properly, to do this, follow our guide located at 
 2. Once you have verified that your ESP8266 operates properly, you can flash the NodeMCU firmware and upload the Disaster Ping-Pong script located at
-3. If you don't have a friend with a second ESP8266, you can modify the code to look for your home Wifi, to do this open the init.lua file in a text editor and change the line that reads:  
-```
-if string.find(k, "ESP*") then
-```  
-replacing ```ESP*``` with the name of your home WiFi (or any WiFi netowrk you want to look for)
+3. If you don't have a friend with a second ESP8266, you can modify the code to look for your home Wifi, to do this open the init.lua file in a text editor and change the line that reads: ```if string.find(k, "ESP*") then``` replacing ```ESP*``` with the name of your home WiFi (or any WiFi netowrk you want to look for)
 4. Once you have completed the Disaster Ping-Pong setup guide, try testing it by holding it closer (while it is still connected to your computer) to another ESP8266 also setup for Disaster Ping-Pong or an access point for the WiFi network you specified in step 3 (most likely, this will be your home wireless router)
 5. Now you can make it portable by attaching the batteries! You may want to first test that the battery holder you bought works before soldering it directly to your ESP8266.
 6. If your development board does not have pins sticking out of it, you may want to solder on header pins in case you get curious and want to play around with the other pins later.
