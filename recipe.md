@@ -1,6 +1,6 @@
 # Build Your Own Diaster Ping-Pong! (BYODPP)
 
-![image](https://github.com/sudomesh/disaster-ping-pong/raw/master/images/devboard.jpeg "ESP8266 dev board") ![image](https://github.com/sudomesh/disaster-ping-pong/raw/master/images/batterypack.jpeg "3xAAA Battery Holder")
+![image](https://github.com/sudomesh/disaster-ping-pong/raw/master/images/devboard.jpeg "ESP8266 dev board" =300x) ![image](https://github.com/sudomesh/disaster-ping-pong/raw/master/images/batterypack.jpeg "3xAAA Battery Holder" =400x)
 
 The Disaster Ping-Pong device is an intro kit for Disaster Radio Foundation's flagship project, Disaster Radio. 
 By following this guide you will learn the basic concepts being used in the development of the Disaster Radio while also providing a physical demonstration ad-hoc mesh networks. 
