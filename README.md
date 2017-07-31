@@ -1,5 +1,8 @@
 # disaster-ping-pong
 helps locate friendly ssids  
+
+(this repo is in the process of transforming into a meshing protocol, the below description still applies to init.lua.old)
+
 Specifically, this repository uses an ESP8266 wifi microcontroller to detect the signal strength of a certain, pre-determined SSID.
 It does this by filtering avaible SSIDs for the desired SSID, then finding the RSSI (signal strength) associated with that SSID.
 The ESP8266 will then blink an LED based on the RSSI value it detects.  
