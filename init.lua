@@ -11,7 +11,10 @@ function holdLED()
 end
 --]]
 
+--SCANNING STATE 
 function startscan()
+
+    wifi.setmode(wifi.STATIONAP)
 
     -- unregister callbacks
     udpSocket:on("sent", function() end)
@@ -22,21 +25,52 @@ function startscan()
     -- re-register callbacks
     wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
         print("connected to " .. T.SSID) 
-        routes[T.SSID] = 1
-        --state_counter = state_counter + 1
         routingStates:Change("transmitting")
     end)
     wifi.eventmon.register(wifi.eventmon.AP_STACONNECTED, function(T)
         wifi.sta.disconnect()
         wifi.sta.autoconnect(0)
         print("I'M AN AP - STATION CONNECTED")
-        --state_counter = state_counter + 1
         routingStates:Change("receiveTransmit")
     end)
 
     -- enter scanning loop
-    scan:register(2000, tmr.ALARM_SINGLE,  function() wifi.sta.getap(listap) end)
+    scan:register(2000, tmr.ALARM_SINGLE,  function() wifi.sta.getap(listAPs) end)
     scan:start()
+
+end
+
+function listAPs(t)
+
+    --SSIDtable = wifi.sta.getap()
+    --if has_index(t, "ESP*") then
+      -- local authmode, rssi, bssid, channel = string.match(v, "([^,]+),([^,]+),([^,]+),([^,]+)")
+      -- print(k.." : "..rssi) TODO generalize has_index to return values
+
+    print("scanning?")
+    for k, v in pairs(has_index(t, "ESP*")) do
+        if has_value(routes, k) then
+            print("already found") 
+            for i,j in pairs(routes) do
+                print(i)
+            end
+            print("look for someone else")
+            scan:register("2000", tmr.ALARM_SINGLE, function() wifi.sta.getap(listAPs) end)
+            scan:start()
+        else
+            stationconnect(k)
+            --signal = -1*rssi < 20 and 20 or -1*rssi
+            --blinky:register(signal*signal/2, tmr.ALARM_AUTO, toggleLED)
+            --blinky:start()
+        end
+    end
+end
+
+function stationconnect(AP)
+    print("trying to connect to ".. AP)
+    sta_cfg.ssid = AP 
+    sta_cfg.auto = true
+    wifi.sta.config(sta_cfg)
 
 end
 
@@ -47,8 +81,12 @@ function stopscan()
     wifi.eventmon.unregister(wifi.eventmon.AP_STACONNECTED)
 
 end
+--END SCANNING STATE
 
+--TRANSMIT STATE
 function setupTransmit()
+
+    wifi.setmode(wifi.STATION)
 
     -- register callback
     udpSocket:on("sent", function()
@@ -59,7 +97,6 @@ function setupTransmit()
     end)
 
     if wifi.sta.getip() == nil then
-        print("connecting...")
         route:register(2000, tmr.ALARM_SINGLE, setupTransmit) 
         route:start() -- TODO add retry timeout
 
@@ -79,24 +116,40 @@ function stopTransmit()
     wifi.sta.disconnect()
 
 end
+-- END TRANSMIT STATE
 
+-- RECEIVE TRANMISSION STATE
 function setupReceiveT()
+
+    wifi.setmode(wifi.SOFTAP)
 
     udpSocket:on("receive", function(s, data, port, ip)
         print(string.format("hello from %s on %s:%d", data, ip, port))
+
+        routes[data] = 1
+
+        -- THIS IS A REALLY TERRIBLE WAY OF DOING THIS
         wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
             print("connected!") 
-            route:register(4000, tmr.ALARM_SINGLE, udpResponse) 
-            route:start()
+            response = tmr.create()
+            response:register(4000, tmr.ALARM_SINGLE, udpResponse) 
+            response:start()
         end)
         stationconnect(data)
+        -- TODO MOVE THIS CALLBACK AND CONNECT TO RESPONSE STATE
+
         routingStates:Change("responding") 
-        --received = tmr.create()
-        --received:register(2000, tmr.ALARM_SINGLE, function() iheardyou(data) end) 
-        --received:start()
     end)
-    
+
     print("waiting for hello")
+
+end
+
+function udpTransmit() --generalize for both init and response
+
+    ip, nm, gw = wifi.sta.getip()
+    print("sending my SSID, ".. SSID .. ", to " .. gw)
+    udpSocket:send(UDPport, gw, SSID)
 
 end
 
@@ -106,24 +159,39 @@ function stopReceiveT()
     udpSocket:on("receive", function() end)
 
 end
+-- END RECEIVE TRANSMISSION STATE
 
+-- RESPOND STATE
 function setupResponse()
-    -- connect only to AP received?
-    --stationconnect("ESP")
 
     -- set udp callback
-    udpSocket:on("sent", function()
-        print("sent ihu")
-        --state_counter = state_counter + 1
-        routingStates:Change("receiveResponse")
-    end)
+    if state_counter == 0 then
+        udpSocket:on("sent", function()
+            print("sent ihu")
+            state_counter = 1
+            routingStates:Change("transmitting")
+        end)
+    else
+        udpSocket:on("sent", function()
+            print("sent ihu")
+            state_counter = 0
+            wifi.sta.autoconnect(0)
+            wifi.sta.disconnect()
+            routingStates:Change("scanning")
+        end)
+    end
 
-    wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
-        print("connected!") 
-        response = tmr.create()
-        response:register(4000, tmr.ALARM_SINGLE, udpResponse) 
-        response:start()
-    end)
+
+end
+
+function udpResponse()
+
+  ip, nm, gw = wifi.sta.getip()
+  if wifi.sta.getip() == nil then
+    return udpResponse  -- TODO add retry counter
+  else
+    udpSocket:send(UDPport, gw, "ihu") --.. ap_cfg.ssid)
+  end
 
 end
 
@@ -132,59 +200,44 @@ function stopResponse()
     udpSocket:on("sent", function() end)
 
 end
+-- END RESPOND STATE
 
+-- RECEIVE RESPONSE STATE
 function setupReceiveR()
 
     -- register callbacks
     -- number of states passed through
-    print("waiting for response")
     if state_counter == 0 then
         -- response is required
         udpSocket:on("receive", function(s, data, port, ip)
-            print(string.format("%s on %s:%d", data, ip, port))
+            print(string.format("%s from %s:%d", data, ip, port))
             state_counter = 1
-            routingStates:Change("receivingTransmit")
+            routingStates:Change("receiveTransmit")
         end)
     else
         udpSocket:on("receive", function(s, data, port, ip)
-            print(string.format("%s on %s:%d", data, ip, port))
+            print(string.format("%s from %s:%d", data, ip, port))
             state_counter = 0
+            wifi.sta.autoconnect(0)
+            wifi.sta.disconnect()
             routingStates:Change("scanning")
         end)
     end
 
-end
-
--- get all ssids
-function listap(t)
-
-    --SSIDtable = wifi.sta.getap()
-    --if has_index(t, "ESP*") then
-      -- local authmode, rssi, bssid, channel = string.match(v, "([^,]+),([^,]+),([^,]+),([^,]+)")
-      -- print(k.." : "..rssi) TODO generalize has_index to return values
-
-    print("scanning?")
-    for k, v in pairs(has_index(t, "ESP*")) do
-        if has_value(routes, k) then
-            print("already found") 
-            for i,j in pairs(routes) do
-                print(i)
-            end
-            print("look for someone else")
-        else
-            stationconnect(k)
-            --signal = -1*rssi < 20 and 20 or -1*rssi
-            --blinky:register(signal*signal/2, tmr.ALARM_AUTO, toggleLED)
-            --blinky:start()
-            return 0
-        end
-    end
-    -- reset timer scanning 
-    scan:register("2000", tmr.ALARM_SINGLE, function() wifi.sta.getap(listap) end)
-    scan:start()
+    print("waiting for response")
 
 end
 
+function stopReceiveR()
+
+    --unregister callback
+    udpSocket:on("receive", function() end)
+
+end
+-- END RECEIVE RESPONSE STATE
+
+
+-- UTILTY FUNCTIONS
 function has_index (tab, val)
     match_tab = {}
     for index, value in pairs(tab) do
@@ -204,74 +257,6 @@ function has_value (tab, val)
     return false
 end
 
---[[function iheardyou(ap)
-    wifi.eventmon.unregister(wifi.eventmon.STA_CONNECTED) 
-    responseconnect()
-    --routes[ap] = 1
-    station_cfg.ssid = ap
-    station_cfg.auto=true
-    wifi.sta.config(station_cfg)
-end--]]
-
--- get all connected clients
---[[
-function listclients()
-  clientcount = 0
-  for mac,ip in pairs(wifi.ap.getclient()) do
-    print(mac,ip)
-    clientcount = clientcount + 1 -- increment count of clients (future-proofing?)
-  end
-  if (clientcount > 0) then
-    blinky:unregister()
-    aplist:unregister()
-    blinky:register(5000, tmr.ALARM_AUTO, holdLED)
-    -- print("somebody ponged")
-  else
-    wifi.sta.getap(listap) 
-    -- print("nobody ponged") 
-  end
-  clientlist = tmr.create()
-  clientlist:register(5000, tmr.ALARM_SINGLE, function() listclients() end)
-  clientlist:start()
-end
---]]
-
---[[REMOVE
-function disconnectWifi()
-
-    wifi.sta.disconnect() 
-    --wifi.sta.clearconfig()
-    print("disconnecting")
-        aplist:register(2000, tmr.ALARM_SINGLE, function() 
-        wifi.sta.getap(listap)
-    end) 
-    aplist:start()
-
-end--]]
-
-function udpTransmit() --generalize for both init and response
-
-    ip, nm, gw = wifi.sta.getip()
-    print("sending ".. SSID .. " to " .. gw)
-    udpSocket:send(UDPport, gw, SSID)
-
-end
-
-function udpResponse()
-
-  ip, nm, gw = wifi.sta.getip()
-  -- print(gw)
-  if wifi.sta.getip() == nil then
-    return udpResponse  -- TODO add retry counter
-    --disconnect = tmr.create()
-    --disconnect:register(4000, tmr.ALARM_SINGLE, disconnectWifi) 
-    --disconnect:start()
-  else
-    udpSocket:send(UDPport, gw, "ifhy") --.. ap_cfg.ssid)
-  end
-
-end
-
 function random_seed()
 
     mac = wifi.sta.getmac()
@@ -282,47 +267,7 @@ function random_seed()
     math.randomseed(mac)
 
 end
-
-function stationconnect(AP)
-    print("trying to connect to ".. AP)
-    sta_cfg.ssid = AP 
-    sta_cfg.auto = true
-    wifi.sta.config(sta_cfg)
-
-end
- 
---[[function responseconnect()
-
-    wifi.eventmon.register(wifi.eventmon.STA_CONNECTED, function(T)
-        print("connected!") 
-        response = tmr.create()
-        response:register(4000, tmr.ALARM_SINGLE, udpResponse) 
-        response:start()
-    end)
-
-end--]]
-
--- don't register callbacks globally?
---[[udpSocket:on("sent", function()
-      print("sent")
-      disconnect = tmr.create()
-      disconnect:register(2000, tmr.ALARM_SINGLE, disconnectWifi) 
-      disconnect:start()
-end)--]]
-
---[[udpSocket:on("receive", function(s, data, port, ip)
-    if data == "ifhy" then
-      print(string.format("%s on %s:%d", data, ip, port))
-      aplist:register(2000, tmr.ALARM_SINGLE, function() wifi.sta.getap(listap) end) 
-      aplist:start()
-
-    else
-      print(string.format("hello from %s on %s:%d", data, ip, port))
-      received = tmr.create()
-      received:register(2000, tmr.ALARM_SINGLE, function() iheardyou(data) end) 
-      received:start()
-    end
-end)--]]
+-- END UTILTY FUNCTIONS
 
 
 function setup()
@@ -342,7 +287,14 @@ function setup()
     wifi.ap.setip(ip_cfg)
 
     ap_cfg.ssid = SSID 
+    ap_cfg.max = 1
     wifi.ap.config(ap_cfg)
+
+
+    sta_cfg.ssid = "ESP" 
+    sta_cfg.auto = false 
+    sta_cfg.save = false 
+    wifi.sta.config(sta_cfg)
 
     udpSocket = net.createUDPSocket()
     udpSocket:listen(UDPport)
@@ -449,8 +401,20 @@ receiveResponse = {
             HandleInput = function() end,
             Update = function() end,
             Enter = setupReceiveR,
-            Exit = stopRecevieR 
+            Exit = stopReceiveR 
            }
+
+--function TransitionStates(new_state)
+
+--end
+
+--[[states = {
+    SCAN = "scanning"
+    TRANSMIT = "transmitting"
+    RECEIVE_T = "receiving transmission"
+    RESPOND = "responding"
+    RECEIVE_R = "receiving response"
+}--]]
 
 -- should probably add timers in state transistions
 
